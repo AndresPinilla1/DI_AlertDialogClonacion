@@ -29,6 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.MoreVert
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -445,112 +448,7 @@ fun ListaTareas(onClose: () -> Unit) {
 
 }
 
-data class Tarea(
-    val id: Int,
-    val nombre: String,
-    var completada: Boolean,
-    var prioridad: Prioridad
-)
 
-enum class Prioridad {
-    ALTA, MEDIA, BAJA
-}
-
-@Composable
-fun TareasApp() {
-    var tareas by remember { mutableStateOf(
-        listOf(
-            Tarea(1, "Comprar leche", false, Prioridad.ALTA),
-            Tarea(2, "Estudiar Kotlin", false, Prioridad.MEDIA),
-            Tarea(3, "Ir al gimnasio", true, Prioridad.BAJA)
-        )
-    ) }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        TareaList(tareas = tareas, onTareaChange = { tareaId, tareaModificada ->
-            tareas = tareas.map { if (it.id == tareaId) tareaModificada else it }
-        })
-    }
-}
-
-@Composable
-fun TareaList(tareas: List<Tarea>, onTareaChange: (Int, Tarea) -> Unit) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(tareas) { tarea ->
-            TareaCard(tarea, onTareaChange)
-            Divider()  // Separador entre las tareas
-        }
-    }
-}
-
-@Composable
-fun TareaCard(tarea: Tarea, onTareaChange: (Int, Tarea) -> Unit) {
-    var expandedMenu by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = 4.dp // Elevación de la tarjeta
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = tarea.nombre,
-                style = MaterialTheme.typography.headlineSmall // Usamos headlineSmall en lugar de h6
-            )
-
-            // Indicador de prioridad
-            Box(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .background(
-                        when (tarea.prioridad) {
-                            Prioridad.ALTA -> Color.Red
-                            Prioridad.MEDIA -> Color.Yellow
-                            Prioridad.BAJA -> Color.Green
-                        },
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = tarea.prioridad.name,
-                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White) // Usamos bodySmall en lugar de body2
-                )
-            }
-
-            // Menú desplegable
-            IconButton(onClick = { expandedMenu = !expandedMenu }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Menú")
-            }
-
-            DropdownMenu(
-                expanded = expandedMenu,
-                onDismissRequest = { expandedMenu = false }
-            ) {
-                DropdownMenuItem(onClick = {
-                    tarea.completada = !tarea.completada
-                    onTareaChange(tarea.id, tarea)
-                    expandedMenu = false
-                }) {
-                    Text(text = if (tarea.completada) "Marcar como pendiente" else "Marcar como completada")
-                }
-                DropdownMenuItem(onClick = {
-                    val nuevaPrioridad = when (tarea.prioridad) {
-                        Prioridad.ALTA -> Prioridad.MEDIA
-                        Prioridad.MEDIA -> Prioridad.BAJA
-                        Prioridad.BAJA -> Prioridad.ALTA
-                    }
-                    tarea.prioridad = nuevaPrioridad
-                    onTareaChange(tarea.id, tarea)
-                    expandedMenu = false
-                }) {
-                    Text(text = "Cambiar prioridad")
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
